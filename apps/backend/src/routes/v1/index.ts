@@ -6,6 +6,7 @@ import { buildMasterDataRouter } from '../../modules/master-data/index.js';
 import { buildIntegrationModule } from '../../modules/integration/index.js';
 import { buildCleaningModule } from '../../modules/cleaning/index.js';
 import { buildFeaturesModule } from '../../modules/features/index.js';
+import { buildTasksModule } from '../../modules/tasks/index.js';
 
 export interface V1Deps {
   pool: Pool | null;
@@ -46,6 +47,10 @@ export function buildV1Router(deps: V1Deps): Router {
       const features = buildFeaturesModule(deps.pool, deps.logger);
       v1.use('/features', features.router);
       mounted.push('/features');
+
+      const tasks = buildTasksModule(deps.pool, deps.logger);
+      v1.use('/tasks', tasks.router);
+      mounted.push('/tasks');
     }
   }
 
