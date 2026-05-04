@@ -1,0 +1,4 @@
+code,name,product_type,category_code,status,unit_of_measure,intended_use,list_price,tags
+PROD-EO-10W40,FluidMind 10W-40 Engine Oil,finished,ENGINE_OILS,development,kg,Light commercial vehicle gasoline engines,12.50,engine_oil|10W-40|commercial
+PROD-GO-75W90,FluidMind 75W-90 Gear Oil,finished,GEAR_OILS,development,kg,Manual transmissions,18.00,gear_oil|75W-90
+PROD-HYD-32,FluidMind Hydraulic ISO 32,finished,HYDRAULIC,development,kg,Industrial hydraulic systems,10.20,hydraulic|iso_32|industrial

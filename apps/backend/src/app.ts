@@ -2,6 +2,7 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import type { Logger } from 'pino';
+import type { Pool } from 'pg';
 import { loadEnv, type Env } from './config/env.js';
 import { createLogger, createRequestLogger } from './config/logger.js';
 import { requestIdMiddleware } from './middleware/requestId.js';
@@ -9,11 +10,18 @@ import { securityMiddleware, rateLimitMiddleware } from './middleware/security.j
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { configureRoutes } from './routes/index.js';
 import { buildOpenApiSpec } from './lib/openapi.js';
+import { createPool } from './lib/db.js';
+
+export interface CreateAppOptions {
+  envOverride?: Env;
+  pool?: Pool;
+}
 
 export interface CreateAppResult {
   app: Express;
   logger: Logger;
   env: Env;
+  pool: Pool | null;
 }
 
 /**
@@ -26,18 +34,32 @@ export interface CreateAppResult {
  *   4. cors            — must be after security to set explicit origin
  *   5. body parsers    — populate req.body before validators see it
  *   6. rate limit      — skips /health
- *   7. routes          — feature routes
+ *   7. routes          — feature routes (incl. master-data when pool present)
  *   8. notFoundHandler — catches unmatched paths
  *   9. errorHandler    — terminal handler, formats every error
  *
  * Exposing a pure factory (no `listen`) lets tests boot the app with
  * supertest without binding a port.
  */
-export function createApp(envOverride?: Env): CreateAppResult {
-  const env = envOverride ?? loadEnv();
+export function createApp(options: CreateAppOptions | Env = {}): CreateAppResult {
+  // Backwards compatibility: previous signature was createApp(envOverride).
+  const opts: CreateAppOptions =
+    'NODE_ENV' in (options as Env) ? { envOverride: options as Env } : (options as CreateAppOptions);
+  const env = opts.envOverride ?? loadEnv();
   const logger = createLogger(env);
-  const app = express();
 
+  // Initialize a pg pool when DATABASE_URL is configured.
+  // Tests that don't need DB access can skip this by leaving DATABASE_URL unset.
+  let pool: Pool | null = opts.pool ?? null;
+  if (!pool && env.DATABASE_URL) {
+    try {
+      pool = createPool(env);
+    } catch (e) {
+      logger.warn({ err: e }, 'Failed to initialize pg pool — DB-bound routes will 500');
+    }
+  }
+
+  const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
 
@@ -55,10 +77,10 @@ export function createApp(envOverride?: Env): CreateAppResult {
     app.get(`${env.API_PREFIX}/openapi.json`, (_req, res) => res.json(spec));
   }
 
-  configureRoutes(app);
+  configureRoutes(app, { pool });
 
   app.use(notFoundHandler);
   app.use(errorHandler);
 
-  return { app, logger, env };
+  return { app, logger, env, pool };
 }

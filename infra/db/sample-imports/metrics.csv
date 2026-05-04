@@ -1,0 +1,5 @@
+code,name_std,name_short,category,data_type,unit_code,expected_min,expected_max,test_method,description
+SULFUR_PCT,Sulfur Content,S,chemical,numeric,pct,0,5,ASTM D2622,Sulfur mass percent
+ASH_PCT,Sulfated Ash,Ash,chemical,numeric,pct,0,2,ASTM D874,Sulfated ash content
+COPPER_STRIP,Copper Strip Corrosion,Cu,chemical,numeric,unit,1,4,ASTM D130,Copper corrosion rating
+FOAMING_SEQ_I,Foaming Tendency Seq I,Foam I,physical,numeric,mL,0,300,ASTM D892,Foaming tendency at 24°C

@@ -1,0 +1,6 @@
+code,name,symbol,dimension,base_unit_code,is_si
+oz,Ounce,oz,mass,kg,false
+ft3,Cubic Foot,ft³,volume,m3,false
+mPa_s,Millipascal-second,mPa·s,viscosity,Pa·s,true
+J,Joule,J,energy,J,true
+W,Watt,W,power,W,true

@@ -1,0 +1,8 @@
+code,name,cas_number,category_code,physical_state,density,viscosity_cst,flash_point_c,unit_of_measure,default_supplier_code,default_unit_cost,hazard_class,is_restricted,status,tags
+RM-MO-220,Mineral Oil 220N,64742-54-7,MINERAL_OIL,liquid,0.875,42.0,225,kg,SUP-001,1.40,combustible,false,active,base|mineral|group_i
+RM-MO-500,Mineral Oil 500N,64742-54-7,MINERAL_OIL,liquid,0.882,95.0,232,kg,SUP-001,1.55,combustible,false,active,base|mineral|group_i
+RM-PAO-4,PAO 4cSt,68037-01-4,PAO,liquid,0.819,4.0,220,kg,SUP-002,5.10,,false,active,base|synthetic|pao|group_iv
+RM-PAO-8,PAO 8cSt,68037-01-4,PAO,liquid,0.832,7.8,250,kg,SUP-002,5.20,,false,active,base|synthetic|pao|group_iv
+RM-AO-AMINE,Diphenylamine Antioxidant,101-84-8,ANTIOXIDANT,liquid,1.020,,150,kg,SUP-003,11.50,,false,active,additive|antioxidant
+RM-VI-PAMA,PAMA VI Improver,9003-32-1,VI_IMPROVER,liquid,0.890,,,kg,SUP-002,7.00,,false,active,additive|vi_improver|polymer
+INVALID-ROW,,not-a-cas,UNKNOWN_CAT,gel,not-a-number,,,,,,,not-a-bool,unknown,
