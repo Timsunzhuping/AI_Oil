@@ -91,9 +91,14 @@ services:
       POSTGRES_USER: fluidmind
       POSTGRES_PASSWORD: fluidmind_dev
       POSTGRES_DB: fluidmind_dev
+      SEED_DATA: 'true'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./infra/db/init.sql:/docker-entrypoint-initdb.d/01_init.sql
+      # Migrations + seeds are run by docker-init.sh on FIRST init only.
+      # Subsequent starts reuse the persisted data volume.
+      - ./infra/db/scripts/docker-init.sh:/docker-entrypoint-initdb.d/00_init.sh:ro
+      - ./infra/db/migrations:/docker-entrypoint-initdb.d/migrations:ro
+      - ./infra/db/seeds:/docker-entrypoint-initdb.d/seeds:ro
     networks:
       - fluidmind-network
     healthcheck:
@@ -101,7 +106,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 30s
 
   redis:
     image: redis:7-alpine
