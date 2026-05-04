@@ -1,0 +1,26 @@
+{
+  "name": "@fluidmind/ai-service",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -b",
+    "test": "vitest run",
+    "lint": "eslint src --ext ts",
+    "type-check": "tsc -b --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@fluidmind/shared-types": "workspace:*",
+    "@fluidmind/shared-utils": "workspace:*",
+    "axios": "^1.6.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.4.0"
+  }
+}

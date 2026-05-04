@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - timsunzhuping
+    labels:
+      - dependencies
+      - chore
+
+  - package-ecosystem: docker
+    directory: /infra/docker
+    schedule:
+      interval: weekly
+    labels:
+      - docker
+      - chore

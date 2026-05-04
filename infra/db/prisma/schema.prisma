@@ -1,0 +1,162 @@
+// FluidMind Database Schema
+// Product formula research platform
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Users and authorization
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  projects    Project[]
+  experiments Experiment[]
+  formulas    Formula[]
+
+  @@index([email])
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  SCIENTIST
+  USER
+}
+
+// Research projects
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      Status   @default(DRAFT)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId  String
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  formulas Formula[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("projects")
+}
+
+// Product formulas
+model Formula {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  composition Json     // JSON structure of ingredients and amounts
+  status      Status   @default(DRAFT)
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  projectId   String
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  ingredients FormulaIngredient[]
+  experiments Experiment[]
+  history     FormulaHistory[]
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([status])
+  @@map("formulas")
+}
+
+// Formula ingredients
+model FormulaIngredient {
+  id        String  @id @default(cuid())
+  name      String
+  amount    Float
+  unit      String
+  notes     String?
+  formulaId String
+  formula   Formula @relation(fields: [formulaId], references: [id], onDelete: Cascade)
+
+  @@index([formulaId])
+  @@map("formula_ingredients")
+}
+
+// Experiments / Tests
+model Experiment {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  results       Json     // Structured results
+  status        Status   @default(DRAFT)
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  formulaId String
+  formula   Formula @relation(fields: [formulaId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@index([formulaId])
+  @@index([userId])
+  @@index([status])
+  @@map("experiments")
+}
+
+// Formula revision history
+model FormulaHistory {
+  id        String   @id @default(cuid())
+  formulaId String
+  formula   Formula  @relation(fields: [formulaId], references: [id], onDelete: Cascade)
+  version   Int
+  snapshot  Json     // Full formula state at this version
+  createdAt DateTime @default(now())
+
+  @@index([formulaId])
+  @@index([version])
+  @@map("formula_history")
+}
+
+// Conversations (for AI interactions)
+model Conversation {
+  id        String   @id @default(cuid())
+  topic     String
+  messages  ConversationMessage[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+  @@map("conversations")
+}
+
+model ConversationMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String   // 'user' | 'assistant' | 'system'
+  content        String
+  createdAt      DateTime @default(now())
+
+  @@index([conversationId])
+  @@map("conversation_messages")
+}
+
+enum Status {
+  DRAFT
+  TESTING
+  PRODUCTION
+  ARCHIVED
+}

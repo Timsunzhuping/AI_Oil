@@ -1,26 +1,51 @@
 {
-  "name": "backend",
+  "name": "@fluidmind/backend",
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "build": "tsc -b",
     "start": "node dist/index.js",
     "lint": "eslint src --ext ts --report-unused-disable-directives --max-warnings 0",
-    "type-check": "tsc --noEmit",
-    "clean": "rm -rf dist node_modules"
+    "type-check": "tsc -b --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "prisma:generate": "prisma generate --schema=../../infra/db/prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate dev --schema=../../infra/db/prisma/schema.prisma",
+    "prisma:studio": "prisma studio --schema=../../infra/db/prisma/schema.prisma",
+    "clean": "rm -rf dist node_modules .turbo"
   },
   "dependencies": {
-    "express": "^4.18.0",
+    "@fluidmind/shared-types": "workspace:*",
+    "@fluidmind/shared-utils": "workspace:*",
+    "@prisma/client": "^5.11.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.0",
-    "axios": "^1.6.0"
+    "dotenv": "^16.4.0",
+    "express": "^4.19.0",
+    "express-rate-limit": "^7.2.0",
+    "helmet": "^7.1.0",
+    "pino": "^8.19.0",
+    "pino-http": "^9.0.0",
+    "pino-pretty": "^11.0.0",
+    "swagger-ui-express": "^5.0.0",
+    "uuid": "^9.0.0",
+    "zod": "^3.22.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.0",
     "@types/express": "^4.17.0",
-    "@types/node": "^20.0.0",
+    "@types/node": "^20.11.0",
+    "@types/supertest": "^6.0.0",
+    "@types/swagger-ui-express": "^4.1.0",
+    "@types/uuid": "^9.0.0",
+    "@vitest/coverage-v8": "^1.4.0",
+    "prisma": "^5.11.0",
+    "supertest": "^6.3.0",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.4.0",
+    "vitest": "^1.4.0"
   }
 }

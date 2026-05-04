@@ -5,36 +5,86 @@ services:
     build:
       context: .
       dockerfile: infra/docker/backend.Dockerfile
+    container_name: fluidmind-backend
     ports:
       - '3001:3001'
     environment:
       - NODE_ENV=development
       - PORT=3001
+      - LOG_LEVEL=debug
+      - DATABASE_URL=postgresql://fluidmind:fluidmind_dev@postgres:5432/fluidmind_dev
+      - REDIS_URL=redis://redis:6379
+      - CORS_ORIGIN=http://localhost:3000
+      - API_PREFIX=/api
     volumes:
       - ./apps/backend/src:/app/apps/backend/src
+      - ./packages:/app/packages
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     networks:
       - fluidmind-network
+    command: pnpm dev
 
   web:
     build:
       context: .
       dockerfile: infra/docker/web.Dockerfile
+    container_name: fluidmind-web
     ports:
       - '3000:3000'
     environment:
       - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3001
+      - VITE_APP_NAME=FluidMind
     volumes:
       - ./apps/web/src:/app/apps/web/src
       - ./apps/web/index.html:/app/apps/web/index.html
+      - ./packages:/app/packages
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     networks:
       - fluidmind-network
+    command: pnpm dev
+
+  ai-service:
+    build:
+      context: .
+      dockerfile: infra/docker/ai-service.Dockerfile
+    container_name: fluidmind-ai-service
+    ports:
+      - '3002:3002'
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - LOG_LEVEL=debug
+    volumes:
+      - ./services/ai-service/src:/app/services/ai-service/src
+      - ./packages:/app/packages
     depends_on:
       - backend
+    networks:
+      - fluidmind-network
+    command: pnpm -F @fluidmind/ai-service dev
 
   postgres:
-    image: postgres:16-alpine
+    image: ankane/pgvector:latest
+    container_name: fluidmind-postgres
     ports:
       - '5432:5432'
     environment:
@@ -43,28 +93,38 @@ services:
       POSTGRES_DB: fluidmind_dev
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./infra/db/init.sql:/docker-entrypoint-initdb.d/01_init.sql
     networks:
       - fluidmind-network
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U fluidmind']
+      test: ['CMD-SHELL', 'pg_isready -U fluidmind -d fluidmind_dev']
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   redis:
     image: redis:7-alpine
+    container_name: fluidmind-redis
     ports:
       - '6379:6379'
+    volumes:
+      - redis_data:/data
     networks:
       - fluidmind-network
+    command: redis-server --appendonly yes
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 5s
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
+    driver: local
 
 networks:
   fluidmind-network:

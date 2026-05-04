@@ -1,0 +1,22 @@
+# CODEOWNERS — auto-request review for matching paths.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-security/customizing-your-repository/about-code-owners
+
+# Default reviewers for everything
+*                                @timsunzhuping
+
+# Frontend
+/apps/web/                       @timsunzhuping
+/packages/api-client/            @timsunzhuping
+
+# Backend / AI
+/apps/backend/                   @timsunzhuping
+/services/ai-service/            @timsunzhuping
+/infra/db/prisma/                @timsunzhuping
+
+# Infra & Ops
+/infra/                          @timsunzhuping
+/.github/                        @timsunzhuping
+/docker-compose.yml              @timsunzhuping
+
+# Architecture decisions
+/docs/architecture/              @timsunzhuping

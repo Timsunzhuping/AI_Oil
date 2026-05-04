@@ -4,14 +4,10 @@
     "composite": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "target": "ES2022",
-    "lib": ["ES2022"],
     "types": ["node"]
   },
   "include": ["src/**/*"],
-  "exclude": ["dist", "node_modules", "**/*.test.ts", "tests/**/*"],
+  "exclude": ["dist", "node_modules", "**/*.test.ts"],
   "references": [
     { "path": "../../packages/shared-types" },
     { "path": "../../packages/shared-utils" }
