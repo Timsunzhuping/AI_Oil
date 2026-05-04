@@ -22,6 +22,7 @@ export interface CreateAppResult {
   logger: Logger;
   env: Env;
   pool: Pool | null;
+  integration: import('./modules/integration/index.js').IntegrationModule | null;
 }
 
 /**
@@ -77,10 +78,10 @@ export function createApp(options: CreateAppOptions | Env = {}): CreateAppResult
     app.get(`${env.API_PREFIX}/openapi.json`, (_req, res) => res.json(spec));
   }
 
-  configureRoutes(app, { pool });
+  const { integration } = configureRoutes(app, { pool, logger });
 
   app.use(notFoundHandler);
   app.use(errorHandler);
 
-  return { app, logger, env, pool };
+  return { app, logger, env, pool, integration };
 }
