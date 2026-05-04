@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../shared-types" },
+    { "path": "../shared-utils" }
+  ]
+}

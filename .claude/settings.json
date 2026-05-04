@@ -1,0 +1,45 @@
+{
+  "name": "FluidMind Monorepo",
+  "description": "Enterprise-grade product formula development AI platform",
+  "version": "0.0.1",
+  "slashCommands": {
+    "dev": "Start development servers (pnpm dev or docker-compose up)",
+    "build": "Build all packages (pnpm build)",
+    "test": "Run test suite (pnpm test)",
+    "lint": "Lint code (pnpm lint)"
+  },
+  "hooks": {},
+  "permissions": {
+    "allowlist": [
+      {
+        "tool": "Bash",
+        "operations": [
+          "git status",
+          "git diff",
+          "git log",
+          "pnpm install",
+          "pnpm dev",
+          "pnpm build",
+          "pnpm test",
+          "pnpm lint",
+          "pnpm format",
+          "docker-compose",
+          "find"
+        ]
+      },
+      {
+        "tool": "Read",
+        "glob": ["**/*.ts", "**/*.tsx", "**/*.json", "**/*.md", "package.json", "*.yml", "*.yaml"]
+      }
+    ]
+  },
+  "excludePatterns": [
+    "node_modules",
+    "dist",
+    "build",
+    ".next",
+    "coverage",
+    ".env",
+    ".env.local"
+  ]
+}
