@@ -8,33 +8,41 @@ package-lock.json
 dist/
 build/
 .tsbuildinfo
+*.tsbuildinfo
 *.tgz
+.turbo/
 
-# Environment
+# Environment files (layered config)
+# Convention:
+#   .env.local, .env.test, .env.prod.example  → CHECKED IN as templates / shared defaults
+#   .env, .env.prod, .env.*.local             → IGNORED (real secrets / personal overrides)
 .env
-.env.local
+.env.prod
 .env.*.local
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
 *~
 .DS_Store
 
+# VSCode personal launch / local-only settings (workspace settings.json IS shared)
+.vscode/launch.json
+.vscode/*.local.json
+
 # Logs
 logs/
 *.log
 npm-debug.log*
 pnpm-debug.log*
+pino.log
 
 # Testing
 coverage/
 .nyc_output/
 
 # Docker
-.dockerignore
 docker-compose.override.yml
 
 # OS

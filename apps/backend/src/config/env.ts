@@ -1,37 +1,89 @@
+import { config as dotenvConfig } from 'dotenv';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { z } from 'zod';
 
-const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.coerce.number().default(3001),
-  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
-  DATABASE_URL: z.string().url('Database URL must be valid'),
-  REDIS_URL: z.string().url('Redis URL must be valid'),
+/**
+ * Layered environment loading.
+ *
+ * Load order (later files OVERRIDE earlier ones):
+ *   1. .env                       — base defaults shared across environments
+ *   2. .env.{NODE_ENV}            — environment-specific (local|test|prod)
+ *   3. .env.{NODE_ENV}.local      — personal/secret overrides (gitignored)
+ *
+ * In production deployments, prefer real secret stores (K8s Secret, Vault,
+ * AWS Secrets Manager) over .env files. The schema below is the contract.
+ */
+const NODE_ENV = process.env.NODE_ENV ?? 'local';
+
+const envFiles = ['.env', `.env.${NODE_ENV}`, `.env.${NODE_ENV}.local`];
+
+for (const file of envFiles) {
+  const filePath = resolve(process.cwd(), file);
+  if (existsSync(filePath)) {
+    dotenvConfig({ path: filePath, override: true });
+  }
+}
+
+const booleanFromString = z
+  .union([z.boolean(), z.string()])
+  .transform((v) => (typeof v === 'boolean' ? v : v.toLowerCase() === 'true'));
+
+export const envSchema = z.object({
+  NODE_ENV: z.enum(['local', 'test', 'prod', 'development', 'production']).default('local'),
+  PORT: z.coerce.number().int().positive().default(3001),
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+
+  SERVICE_NAME: z.string().default('fluidmind-backend'),
+  SERVICE_VERSION: z.string().default('0.0.1'),
+
+  DATABASE_URL: z.string().url().optional(),
+  REDIS_URL: z.string().url().optional(),
+
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
   API_PREFIX: z.string().default('/api'),
-  RATE_LIMIT_WINDOW_MS: z.coerce.number().default(15 * 60 * 1000),
-  RATE_LIMIT_MAX_REQUESTS: z.coerce.number().default(100),
+
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(15 * 60 * 1000),
+  RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().default(100),
+
+  ENABLE_SWAGGER: booleanFromString.default(true),
+  ENABLE_REQUEST_LOGGING: booleanFromString.default(true),
 });
 
 export type Env = z.infer<typeof envSchema>;
 
-export function validateEnv(): Env {
-  const env = {
-    NODE_ENV: process.env.NODE_ENV,
-    PORT: process.env.PORT,
-    LOG_LEVEL: process.env.LOG_LEVEL,
-    DATABASE_URL: process.env.DATABASE_URL,
-    REDIS_URL: process.env.REDIS_URL,
-    CORS_ORIGIN: process.env.CORS_ORIGIN,
-    API_PREFIX: process.env.API_PREFIX,
-    RATE_LIMIT_WINDOW_MS: process.env.RATE_LIMIT_WINDOW_MS,
-    RATE_LIMIT_MAX_REQUESTS: process.env.RATE_LIMIT_MAX_REQUESTS,
-  };
+let cachedEnv: Env | null = null;
 
-  const parsed = envSchema.safeParse(env);
+export function loadEnv(): Env {
+  if (cachedEnv) return cachedEnv;
+
+  const parsed = envSchema.safeParse(process.env);
   if (!parsed.success) {
-    console.error('Invalid environment variables:', parsed.error.flatten());
+    // eslint-disable-next-line no-console
+    console.error('❌ Invalid environment configuration:');
+    // eslint-disable-next-line no-console
+    console.error(JSON.stringify(parsed.error.flatten().fieldErrors, null, 2));
     process.exit(1);
   }
 
-  return parsed.data;
+  cachedEnv = parsed.data;
+  return cachedEnv;
 }
+
+export function resetEnvCache(): void {
+  cachedEnv = null;
+}
+
+export const validateEnv = loadEnv;
+
+export const isProduction = (): boolean => {
+  const e = loadEnv().NODE_ENV;
+  return e === 'prod' || e === 'production';
+};
+
+export const isTest = (): boolean => loadEnv().NODE_ENV === 'test';
+
+export const isLocal = (): boolean => {
+  const e = loadEnv().NODE_ENV;
+  return e === 'local' || e === 'development';
+};

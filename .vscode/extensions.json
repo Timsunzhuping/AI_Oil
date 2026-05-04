@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "eamodio.gitlens",
+    "GitHub.copilot",
+    "microsoft.vscode-typescript-next",
+    "ms-vscode.vscode-typescript-azure-repos-extension",
+    "mhutchie.git-graph",
+    "redhat.vscode-yaml",
+    "humao.rest-client",
+    "postman.postman-for-vscode"
+  ]
+}

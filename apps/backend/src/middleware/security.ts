@@ -1,6 +1,7 @@
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { Env } from '../config/env.js';
+import type { Env } from '../config/env.js';
+import { RateLimitError } from '../lib/errors.js';
 
 export function securityMiddleware() {
   return helmet({
@@ -17,15 +18,21 @@ export function securityMiddleware() {
       includeSubDomains: true,
       preload: true,
     },
+    crossOriginEmbedderPolicy: false,
   });
 }
 
+/**
+ * Rate limiter. The handler funnels into the global error pipeline so
+ * a 429 still uses the unified envelope and carries the trace_id.
+ */
 export function rateLimitMiddleware(env: Env) {
   return rateLimit({
     windowMs: env.RATE_LIMIT_WINDOW_MS,
     max: env.RATE_LIMIT_MAX_REQUESTS,
-    standardHeaders: true,
+    standardHeaders: 'draft-7',
     legacyHeaders: false,
     skip: (req) => req.path === '/health',
+    handler: (_req, _res, next) => next(new RateLimitError()),
   });
 }
