@@ -5,6 +5,7 @@ import { healthRouter } from './health.js';
 import { buildMasterDataRouter } from '../../modules/master-data/index.js';
 import { buildIntegrationModule } from '../../modules/integration/index.js';
 import { buildCleaningModule } from '../../modules/cleaning/index.js';
+import { buildFeaturesModule } from '../../modules/features/index.js';
 
 export interface V1Deps {
   pool: Pool | null;
@@ -17,8 +18,9 @@ export interface V1Deps {
  * V1 API router.
  *
  * Feature modules are mounted here under their resource prefix.
- * DB-bound modules (master-data, integration, cleaning) only mount when a
- * pool is available, keeping health-only / DB-less test runs working.
+ * DB-bound modules (master-data, integration, cleaning, features) only
+ * mount when a pool is available, keeping health-only / DB-less test runs
+ * working.
  */
 export function buildV1Router(deps: V1Deps): Router {
   const v1 = Router();
@@ -40,6 +42,10 @@ export function buildV1Router(deps: V1Deps): Router {
       const cleaning = buildCleaningModule(deps.pool, deps.logger);
       v1.use('/cleaning', cleaning.router);
       mounted.push('/cleaning');
+
+      const features = buildFeaturesModule(deps.pool, deps.logger);
+      v1.use('/features', features.router);
+      mounted.push('/features');
     }
   }
 
