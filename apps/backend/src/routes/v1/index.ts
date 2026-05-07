@@ -11,6 +11,7 @@ import { buildPredictionModule } from '../../modules/prediction/index.js';
 import { buildRecommendationModule } from '../../modules/recommendation/index.js';
 import { buildKnowledgeModule } from '../../modules/knowledge/index.js';
 import { buildQaModule } from '../../modules/qa/index.js';
+import { buildErpModule } from '../../modules/erp/index.js';
 
 export interface V1Deps {
   pool: Pool | null;
@@ -78,6 +79,12 @@ export function buildV1Router(deps: V1Deps): Router {
       const qa = buildQaModule(deps.pool, deps.logger);
       v1.use('/qa', qa.router);
       mounted.push('/qa');
+
+      // ERP integration (SAP / LIMS / Carbon) — independent of the generic
+      // integration framework; uses its own audit tables.
+      const erp = buildErpModule(deps.pool, deps.logger);
+      v1.use('/erp', erp.router);
+      mounted.push('/erp');
     }
   }
 
