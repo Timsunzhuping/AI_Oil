@@ -13,6 +13,7 @@ import { buildKnowledgeModule } from '../../modules/knowledge/index.js';
 import { buildQaModule } from '../../modules/qa/index.js';
 import { buildErpModule } from '../../modules/erp/index.js';
 import { buildMlModule } from '../../modules/ml/index.js';
+import { buildSecurityModule } from '../../modules/security/index.js';
 
 export interface V1Deps {
   pool: Pool | null;
@@ -92,6 +93,14 @@ export function buildV1Router(deps: V1Deps): Router {
       const ml = buildMlModule(deps.pool, deps.logger);
       v1.use('/ml', ml.router);
       mounted.push('/ml');
+
+      // Security / RBAC / audit / export approval / model asset registry.
+      // The authenticate middleware MUST run before any other module if
+      // RBAC is to be enforced; we mount it at the top of the v1 router.
+      const security = buildSecurityModule(deps.pool, deps.logger);
+      v1.use(security.authenticateMiddleware);
+      v1.use('/security', security.router);
+      mounted.push('/security');
     }
   }
 
