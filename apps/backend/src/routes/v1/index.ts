@@ -9,6 +9,7 @@ import { buildFeaturesModule } from '../../modules/features/index.js';
 import { buildTasksModule } from '../../modules/tasks/index.js';
 import { buildPredictionModule } from '../../modules/prediction/index.js';
 import { buildRecommendationModule } from '../../modules/recommendation/index.js';
+import { buildKnowledgeModule } from '../../modules/knowledge/index.js';
 
 export interface V1Deps {
   pool: Pool | null;
@@ -65,6 +66,11 @@ export function buildV1Router(deps: V1Deps): Router {
       });
       v1.use('/recommend', recommendation.router);
       mounted.push('/recommend');
+
+      const knowledge = buildKnowledgeModule(deps.pool, deps.logger);
+      v1.use('/knowledge', knowledge.knowledgeRouter);
+      v1.use('/docs', knowledge.documentRouter);
+      mounted.push('/knowledge', '/docs');
     }
   }
 
