@@ -8,6 +8,7 @@ import { buildCleaningModule } from '../../modules/cleaning/index.js';
 import { buildFeaturesModule } from '../../modules/features/index.js';
 import { buildTasksModule } from '../../modules/tasks/index.js';
 import { buildPredictionModule } from '../../modules/prediction/index.js';
+import { buildRecommendationModule } from '../../modules/recommendation/index.js';
 
 export interface V1Deps {
   pool: Pool | null;
@@ -56,6 +57,14 @@ export function buildV1Router(deps: V1Deps): Router {
       const prediction = buildPredictionModule(deps.pool, deps.logger);
       v1.use('/predict', prediction.router);
       mounted.push('/predict');
+
+      // Reverse recommendation reuses the same predictor adapter so the
+      // surrogate evaluator hits the SAME model the /predict endpoints serve.
+      const recommendation = buildRecommendationModule(deps.pool, deps.logger, {
+        adapter: prediction.adapter,
+      });
+      v1.use('/recommend', recommendation.router);
+      mounted.push('/recommend');
     }
   }
 
