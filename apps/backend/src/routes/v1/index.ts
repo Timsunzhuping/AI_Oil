@@ -14,6 +14,7 @@ import { buildQaModule } from '../../modules/qa/index.js';
 import { buildErpModule } from '../../modules/erp/index.js';
 import { buildMlModule } from '../../modules/ml/index.js';
 import { buildSecurityModule } from '../../modules/security/index.js';
+import { buildEvaluationModule } from '../../modules/evaluation/index.js';
 
 export interface V1Deps {
   pool: Pool | null;
@@ -101,6 +102,16 @@ export function buildV1Router(deps: V1Deps): Router {
       v1.use(security.authenticateMiddleware);
       v1.use('/security', security.router);
       mounted.push('/security');
+
+      // Evaluation / acceptance — reuses the prediction adapter and
+      // recommendation pipeline so acceptance runs hit the SAME engines
+      // production traffic does.
+      const evaluation = buildEvaluationModule(deps.pool, deps.logger, {
+        predictor: prediction.adapter,
+        pipeline: recommendation.pipeline,
+      });
+      v1.use('/evaluation', evaluation.router);
+      mounted.push('/evaluation');
     }
   }
 
