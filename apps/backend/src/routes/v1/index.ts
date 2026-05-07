@@ -12,6 +12,7 @@ import { buildRecommendationModule } from '../../modules/recommendation/index.js
 import { buildKnowledgeModule } from '../../modules/knowledge/index.js';
 import { buildQaModule } from '../../modules/qa/index.js';
 import { buildErpModule } from '../../modules/erp/index.js';
+import { buildMlModule } from '../../modules/ml/index.js';
 
 export interface V1Deps {
   pool: Pool | null;
@@ -85,6 +86,12 @@ export function buildV1Router(deps: V1Deps): Router {
       const erp = buildErpModule(deps.pool, deps.logger);
       v1.use('/erp', erp.router);
       mounted.push('/erp');
+
+      // MLOps platform — datasets / training jobs / model registry +
+      // release/rollback + compare reports + auto-finetune triggers.
+      const ml = buildMlModule(deps.pool, deps.logger);
+      v1.use('/ml', ml.router);
+      mounted.push('/ml');
     }
   }
 
