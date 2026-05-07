@@ -10,6 +10,7 @@ import { buildTasksModule } from '../../modules/tasks/index.js';
 import { buildPredictionModule } from '../../modules/prediction/index.js';
 import { buildRecommendationModule } from '../../modules/recommendation/index.js';
 import { buildKnowledgeModule } from '../../modules/knowledge/index.js';
+import { buildQaModule } from '../../modules/qa/index.js';
 
 export interface V1Deps {
   pool: Pool | null;
@@ -71,6 +72,12 @@ export function buildV1Router(deps: V1Deps): Router {
       v1.use('/knowledge', knowledge.knowledgeRouter);
       v1.use('/docs', knowledge.documentRouter);
       mounted.push('/knowledge', '/docs');
+
+      // QA assistant retrieves over the same KB tables, so it sits AFTER the
+      // knowledge module and uses its own pipeline (classifier + retriever + LLM).
+      const qa = buildQaModule(deps.pool, deps.logger);
+      v1.use('/qa', qa.router);
+      mounted.push('/qa');
     }
   }
 
